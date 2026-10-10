@@ -1,27 +1,17 @@
+import React, { useState } from "react";
 import {
-  AlertTriangle,
-  BarChart3,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Pencil,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-react-native"
-import React, { Fragment, useMemo, useState } from "react"
-import {
-  KeyboardAvoidingView,
   Platform,
-  Pressable,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
-  View,
-} from "react-native"
+  View
+} from "react-native";
 
+import { DeleteConfirmPopup } from "@/components/income-tracker/delete-confirm";
+import { Form } from "@/components/income-tracker/form";
+import { Header } from "@/components/income-tracker/header";
+import { Info } from "@/components/income-tracker/info";
+import { Table } from "@/components/income-tracker/table";
 /**
  * Dependencies:
  *   npm i lucide-react-native react-native-svg
@@ -125,7 +115,6 @@ const MONO = Platform.select({
 })
 
 type FormMode = { type: "add" } | { type: "edit"; record: StockRecord }
-type SortCol = "month" | "returnRate" | "profit"
 
 // Small text wrapper so every Text uses the mono font
 const T = ({
@@ -147,28 +136,8 @@ export default function App() {
     returnRate: "",
     shares: "",
   })
-  const [sortCol, setSortCol] = useState<SortCol>("month")
-  const [sortDir, setSortDir] = useState<1 | -1>(1)
 
   const records = data[year] ?? []
-
-  const groups = useMemo(() => {
-    const map = new Map<string, StockRecord[]>()
-    for (const r of records) {
-      if (!map.has(r.stock)) map.set(r.stock, [])
-      map.get(r.stock)!.push(r)
-    }
-    for (const [, rows] of map) {
-      rows.sort((a, b) => {
-        if (sortCol === "returnRate")
-          return (a.returnRate - b.returnRate) * sortDir
-        if (sortCol === "profit")
-          return (a.returnRate * a.shares - b.returnRate * b.shares) * sortDir
-        return (a.month - b.month) * sortDir
-      })
-    }
-    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
-  }, [records, sortCol, sortDir])
 
   const totalProfit = records.reduce((s, r) => s + r.returnRate * r.shares, 0)
   const gains = records.filter((r) => r.returnRate > 0).length
@@ -179,14 +148,6 @@ export default function App() {
         records[0],
       )
     : null
-
-  const toggleSort = (col: SortCol) => {
-    if (sortCol === col) setSortDir((d) => (d === 1 ? -1 : 1))
-    else {
-      setSortCol(col)
-      setSortDir(1)
-    }
-  }
 
   const openAdd = () => {
     setSelectedId(null)
@@ -256,13 +217,6 @@ export default function App() {
     setSelectedId(null)
   }
 
-  const Arrow = ({ col }: { col: SortCol }) =>
-    sortCol === col ? (
-      <Text style={{ color: GREEN }}>{sortDir === 1 ? " ↑" : " ↓"}</Text>
-    ) : (
-      <Text style={{ opacity: 0.3 }}> ↕</Text>
-    )
-
   const rateNum = parseFloat(form.returnRate)
   const sharesNum = parseFloat(form.shares)
   const previewProfit =
@@ -278,436 +232,46 @@ export default function App() {
     <View style={s.root}>
       <StatusBar barStyle="dark-content" />
 
-      {/* ── Header ── */}
-      <View style={s.header}>
-        <View style={s.headerTop}>
-          <View>
-            <T style={{ color: LABEL, letterSpacing: 3.2, textTransform: "uppercase" }}>
-              Portfolio
-            </T>
-            <T style={{ fontWeight: "bold", letterSpacing: -0.4 }}>
-              Profit Tracker
-            </T>
-          </View>
-          <Pressable
-            onPress={openAdd}
-            style={({ pressed }) => [s.addBtn, pressed && { opacity: 0.7 }]}
-          >
-            <Plus size={13} strokeWidth={2.5} color="#fff" />
-            <T style={{ color: "#fff", fontWeight: "bold" }}>ADD</T>
-          </Pressable>
-        </View>
+      <Header T={T} openAdd={openAdd} year={year} setYear={setYear} setSelectedId={setSelectedId}/>
 
-        {/* Year nav */}
-        <View style={s.yearNav}>
-          <Pressable
-            onPress={() => {
-              setYear((y) => y - 1)
-              setSelectedId(null)
-            }}
-            style={{ padding: 4 }}
-          >
-            <ChevronLeft size={16} color={MUTED} />
-          </Pressable>
-          <T style={{ fontWeight: "bold", letterSpacing: 3.2 }}>{year}</T>
-          <Pressable
-            onPress={() => {
-              setYear((y) => y + 1)
-              setSelectedId(null)
-            }}
-            style={{ padding: 4 }}
-          >
-            <ChevronRight size={16} color={MUTED} />
-          </Pressable>
-        </View>
-      </View>
+      <Info T={T} totalProfit={totalProfit} fmt={fmt} gains={gains} losses={losses} best={best}/>
+      
+      <Table 
+        T={T} 
+        fmt={fmt} 
+        records={records} 
+        openAdd={openAdd} 
+        openEdit={openEdit} 
+        year={year} 
+        MONTHS={MONTHS}
+        setSelectedId={setSelectedId} 
+        selectedId={selectedId} 
+        setDeleteConfirmId={setDeleteConfirmId}
+      />
+      
+        <DeleteConfirmPopup 
+          T={T} 
+          deleteConfirmId={deleteConfirmId} 
+          deleteTarget={deleteTarget} 
+          MONTHS={MONTHS}
+          year={year}
+          fmt={fmt}
+          setDeleteConfirmId={setDeleteConfirmId}
+          handleDeleteConfirmed={handleDeleteConfirmed}
+        />
 
-      {/* ── Summary strip ── */}
-      <View style={s.summary}>
-        <View style={[s.summaryCell, s.summaryCellBorder]}>
-          <T style={s.summaryLabel}>Total Profit</T>
-          <T style={{ fontWeight: "bold", color: totalProfit >= 0 ? GREEN : RED }}>
-            {totalProfit >= 0 ? "+" : ""}
-            {fmt(totalProfit, 0)}
-          </T>
-        </View>
-        <View style={[s.summaryCell, s.summaryCellBorder]}>
-          <T style={s.summaryLabel}>Win / Loss</T>
-          <T style={{ fontWeight: "bold" }}>
-            <Text style={{ color: GREEN }}>{gains}</Text>
-            <Text style={{ color: MUTED }}> / </Text>
-            <Text style={{ color: RED }}>{losses}</Text>
-          </T>
-        </View>
-        <View style={s.summaryCell}>
-          <T style={s.summaryLabel}>Best Rate</T>
-          <T style={{ fontWeight: "bold", color: GREEN }}>
-            {best ? fmt(best.returnRate) : "—"}
-          </T>
-        </View>
-      </View>
-
-      {/* ── Table ── */}
-      <View style={{ flex: 1, backgroundColor: BG }}>
-        {records.length === 0 ? (
-          <View style={s.empty}>
-            <BarChart3 size={28} color="#d0d0d8" />
-            <T style={{ color: LABEL }}>No records for {year}</T>
-            <Pressable onPress={openAdd}>
-              <T style={{ color: GREEN }}>Add first entry →</T>
-            </Pressable>
-          </View>
-        ) : (
-          <>
-            {/* Table head */}
-            <View style={s.thead}>
-              <View style={[s.cStock, { paddingLeft: 12 }]}>
-                <T style={s.th}>STOCK</T>
-              </View>
-              <Pressable style={s.cMonth} onPress={() => toggleSort("month")}>
-                <T style={s.th}>
-                  MM
-                  <Arrow col="month" />
-                </T>
-              </Pressable>
-              <Pressable style={s.cRate} onPress={() => toggleSort("returnRate")}>
-                <T style={s.th}>
-                  RATE
-                  <Arrow col="returnRate" />
-                </T>
-              </Pressable>
-              <View style={s.cShares}>
-                <T style={s.th}>SHARES</T>
-              </View>
-              <Pressable style={s.cProfit} onPress={() => toggleSort("profit")}>
-                <T style={s.th}>
-                  R×S
-                  <Arrow col="profit" />
-                </T>
-              </Pressable>
-            </View>
-
-            <ScrollView>
-              {groups.map(([stockName, rows]) =>
-                rows.map((r, rowIdx) => {
-                  const profit = r.returnRate * r.shares
-                  const isFirst = rowIdx === 0
-                  const isLast = rowIdx === rows.length - 1
-                  const isSelected = selectedId === r.id
-
-                  const lastBorder = {
-                    borderBottomWidth: 2,
-                    borderBottomColor: "rgba(0,0,0,0.07)",
-                  }
-                  const midBorder = {
-                    borderBottomWidth: 1,
-                    borderBottomColor: "rgba(0,0,0,0.05)",
-                  }
-
-                  return (
-                    <Fragment key={r.id}>
-                      <Pressable
-                        onPress={() => setSelectedId(isSelected ? null : r.id)}
-                        style={[
-                          s.row,
-                          {
-                            backgroundColor: isSelected
-                              ? "rgba(0,168,84,0.06)"
-                              : "transparent",
-                          },
-                          !isSelected && (isLast ? lastBorder : midBorder),
-                        ]}
-                      >
-                        <View
-                          style={[
-                            s.cStock,
-                            {
-                              paddingLeft: 12,
-                              paddingVertical: 10,
-                              borderLeftWidth: 2,
-                              borderLeftColor: isFirst ? INK : "transparent",
-                            },
-                          ]}
-                        >
-                          <T
-                            style={{
-                              fontWeight: "bold",
-                              letterSpacing: 0.8,
-                              color: isFirst ? INK : "transparent",
-                            }}
-                          >
-                            {stockName}
-                          </T>
-                        </View>
-                        <View style={[s.cMonth, { paddingVertical: 16 }]}>
-                          <T style={{ color: MUTED }}>{MONTHS[r.month - 1]}</T>
-                        </View>
-                        <View style={[s.cRate, { paddingVertical: 10 }]}>
-                          <T style={{ color: GREEN, fontWeight: "600" }}>
-                            {fmt(r.returnRate)}
-                          </T>
-                        </View>
-                        <View style={[s.cShares, { paddingVertical: 10 }]}>
-                          <T style={{ color: MUTED }}>{r.shares}</T>
-                        </View>
-                        <View style={[s.cProfit, { paddingVertical: 10 }]}>
-                          <T style={{ color: GREEN, fontWeight: "600" }}>
-                            {fmt(profit, 1)}
-                          </T>
-                        </View>
-                      </Pressable>
-
-                      {/* Expanded action row */}
-                      {isSelected && (
-                        <View
-                          style={[
-                            s.actionRow,
-                            isLast ? lastBorder : midBorder,
-                          ]}
-                        >
-                          <Pressable
-                            onPress={() => openEdit(r)}
-                            style={({ pressed }) => [
-                              s.actionBtn,
-                              {
-                                backgroundColor: "#f0f0f4",
-                                borderColor: "rgba(0,0,0,0.1)",
-                              },
-                              pressed && { opacity: 0.7 },
-                            ]}
-                          >
-                            <Pencil size={10} strokeWidth={2.5} color={INK} />
-                            <T style={s.actionTxt}>EDIT</T>
-                          </Pressable>
-                          <Pressable
-                            onPress={() => setDeleteConfirmId(r.id)}
-                            style={({ pressed }) => [
-                              s.actionBtn,
-                              {
-                                backgroundColor: "rgba(217,58,58,0.08)",
-                                borderColor: "rgba(217,58,58,0.2)",
-                              },
-                              pressed && { opacity: 0.7 },
-                            ]}
-                          >
-                            <Trash2 size={10} strokeWidth={2.5} color={RED} />
-                            <T style={[s.actionTxt, { color: RED }]}>DELETE</T>
-                          </Pressable>
-                          <T
-                            style={{
-                              marginLeft: "auto",
-                              color: LABEL,
-                              letterSpacing: 1.6,
-                            }}
-                          >
-                            {MONTHS[r.month - 1].toUpperCase()} {year}
-                          </T>
-                        </View>
-                      )}
-                    </Fragment>
-                  )
-                }),
-              )}
-            </ScrollView>
-          </>
-        )}
-      </View>
-
-      {/* ── Delete confirmation ── */}
-      {deleteConfirmId && deleteTarget && (
-        <View style={s.overlay}>
-          <View style={s.dialog}>
-            <View style={s.dialogIcon}>
-              <AlertTriangle size={22} color={RED} />
-            </View>
-            <View style={{ alignItems: "center" }}>
-              <T style={{ fontWeight: "bold", marginBottom: 4 }}>Delete Record?</T>
-              <T style={{ color: LABEL }}>This will permanently remove</T>
-              <T style={{ marginTop: 4, fontWeight: "600" }}>
-                {deleteTarget.stock} · {MONTHS[deleteTarget.month - 1]} {year}
-              </T>
-              <T style={{ marginTop: 2, color: LABEL }}>
-                Profit:{" "}
-                <Text
-                  style={{
-                    color:
-                      deleteTarget.returnRate * deleteTarget.shares >= 0
-                        ? GREEN
-                        : RED,
-                  }}
-                >
-                  {fmt(deleteTarget.returnRate * deleteTarget.shares, 1)}
-                </Text>
-              </T>
-            </View>
-            <View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
-              <Pressable
-                onPress={() => setDeleteConfirmId(null)}
-                style={({ pressed }) => [
-                  s.dialogBtn,
-                  {
-                    backgroundColor: "#eaeaee",
-                    borderWidth: 1,
-                    borderColor: "rgba(0,0,0,0.08)",
-                  },
-                  pressed && { opacity: 0.7 },
-                ]}
-              >
-                <T style={{ color: "#808090", fontWeight: "bold", letterSpacing: 1.6 }}>
-                  CANCEL
-                </T>
-              </Pressable>
-              <Pressable
-                onPress={() => handleDeleteConfirmed(deleteConfirmId)}
-                style={({ pressed }) => [
-                  s.dialogBtn,
-                  { backgroundColor: RED },
-                  pressed && { opacity: 0.7 },
-                ]}
-              >
-                <T style={{ color: "#fff", fontWeight: "bold", letterSpacing: 1.6 }}>
-                  DELETE
-                </T>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      )}
-
-      {/* ── Full-screen Add / Edit form ── */}
-      {formMode && (
-        <KeyboardAvoidingView
-          style={s.formScreen}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
-          <View style={s.formHeader}>
-            <View>
-              <T style={{ color: LABEL, letterSpacing: 1.9, textTransform: "uppercase", marginBottom: 2 }}>
-                {formMode.type === "edit" ? "Editing" : "New Entry"} · {year}
-              </T>
-              <T style={{ fontWeight: "bold", letterSpacing: -0.4 }}>
-                {formMode.type === "edit"
-                  ? `${formMode.record.stock} — ${MONTHS[formMode.record.month - 1]}`
-                  : "Add Record"}
-              </T>
-            </View>
-            <Pressable onPress={() => setFormMode(null)} style={s.closeBtn}>
-              <X size={15} color={MUTED_FG} />
-            </Pressable>
-          </View>
-
-          <ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 40, gap: 24 }}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={{ gap: 8 }}>
-              <T style={s.fieldLabel}>Stock Symbol</T>
-              <TextInput
-                placeholder="e.g. AAPL"
-                placeholderTextColor="rgba(17,17,24,0.4)"
-                value={form.stock}
-                autoCapitalize="characters"
-                autoCorrect={false}
-                onChangeText={(v) => setForm((f) => ({ ...f, stock: v }))}
-                style={[s.input, { fontWeight: "bold", letterSpacing: 1.6, textTransform: "uppercase" }]}
-              />
-            </View>
-
-            <View style={{ gap: 8 }}>
-              <T style={s.fieldLabel}>Month</T>
-              <View style={s.monthGrid}>
-                {MONTHS.map((m, i) => {
-                  const active = form.month === i + 1
-                  return (
-                    <Pressable
-                      key={i}
-                      onPress={() => setForm((f) => ({ ...f, month: i + 1 }))}
-                      style={[
-                        s.monthBtn,
-                        { backgroundColor: active ? INK : "#eaeaee" },
-                      ]}
-                    >
-                      <T
-                        style={{
-                          fontWeight: "600",
-                          letterSpacing: 0.8,
-                          color: active ? "#fff" : "#808090",
-                        }}
-                      >
-                        {m}
-                      </T>
-                    </Pressable>
-                  )
-                })}
-              </View>
-            </View>
-
-            <View style={{ flexDirection: "row", gap: 16 }}>
-              <View style={{ flex: 1, gap: 8 }}>
-                <T style={s.fieldLabel}>Dividend Rate</T>
-                <TextInput
-                  keyboardType="decimal-pad"
-                  placeholder="12.5"
-                  placeholderTextColor="rgba(17,17,24,0.4)"
-                  value={form.returnRate}
-                  onChangeText={(v) => setForm((f) => ({ ...f, returnRate: v }))}
-                  style={s.input}
-                />
-              </View>
-              <View style={{ flex: 1, gap: 8 }}>
-                <T style={s.fieldLabel}>Share Amount</T>
-                <TextInput
-                  keyboardType="number-pad"
-                  placeholder="100"
-                  placeholderTextColor="rgba(17,17,24,0.4)"
-                  value={form.shares}
-                  onChangeText={(v) => setForm((f) => ({ ...f, shares: v }))}
-                  style={s.input}
-                />
-              </View>
-            </View>
-
-            {/* Preview */}
-            <View
-              style={[
-                s.preview,
-                {
-                  borderColor:
-                    previewProfit !== null
-                      ? "rgba(0,168,84,0.25)"
-                      : "rgba(0,0,0,0.08)",
-                },
-              ]}
-            >
-              <T style={{ fontWeight: "bold", letterSpacing: 0.8, color: LABEL }}>
-                RATE × SHARES
-              </T>
-              <T
-                style={{
-                  fontSize: 18,
-                  fontWeight: "bold",
-                  color: previewProfit !== null ? GREEN : "#d0d0d8",
-                }}
-              >
-                {previewProfit !== null ? fmt(previewProfit, 2) : "—"}
-              </T>
-            </View>
-          </ScrollView>
-
-          <View style={s.formFooter}>
-            <Pressable
-              onPress={handleSubmit}
-              style={({ pressed }) => [s.submitBtn, pressed && { opacity: 0.7 }]}
-            >
-              <Check size={15} strokeWidth={2.5} color="#fff" />
-              <T style={{ fontSize: 14, fontWeight: "bold", letterSpacing: 1.6, color: "#fff" }}>
-                {formMode.type === "edit" ? "UPDATE RECORD" : "SAVE RECORD"}
-              </T>
-            </Pressable>
-          </View>
-        </KeyboardAvoidingView>
-      )}
+      <Form 
+        formMode={formMode} 
+        T={T} 
+        year={year} 
+        MONTHS={MONTHS} 
+        setFormMode={setFormMode} 
+        form={form} 
+        setForm={setForm} 
+        previewProfit={previewProfit} 
+        handleSubmit={handleSubmit}
+        fmt={fmt}/>
+      
     </View>
   )
 }
