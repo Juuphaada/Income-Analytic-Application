@@ -1,54 +1,68 @@
+import { UiText } from "@/components/ui-text";
+import { COLORS, FONTS } from "@/constants/theme";
+import { dividendContext } from "@/Context/dividendContext";
+import { formContext } from "@/Context/formContext";
 import {
-    ChevronLeft,
-    ChevronRight,
-    Plus,
-} from "lucide-react-native"
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+} from "lucide-react-native";
+import { useContext } from 'react';
 import {
-    Pressable,
-    StyleSheet,
-    Text,
-    View
-} from "react-native"
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View
+} from "react-native";
 
-// ── Theme tokens (light) ──
-const GREEN = "#00a854"
-const RED = "#d93a3a"
-const MUTED = "#a0a0b0"
-const LABEL = "#9090a0"
-const INK = "#111118"
-const BG = "#fafafc" // background
-const CARD = "#ffffff" // card
-const BORDER = "rgba(0,0,0,0.08)" // border
-const MUTED_FG = "#6b6b7b" // muted-foreground
+export function Header() {
 
-type HeaderProps = {
-  T: React.ComponentType<React.ComponentProps<typeof Text>>;
-  openAdd: () => void;
-  year:number;
-  setYear:React.Dispatch<React.SetStateAction<number>>;
-  setSelectedId: React.Dispatch<React.SetStateAction<string | null>>;
-};
+  const divContext = useContext(dividendContext);
+  const fContext = useContext(formContext);
+  
+  if (!divContext) {
+    throw new Error(
+      "header must be used within DividendContextProvider"
+    );
+  };
+  if (!fContext) {
+    throw new Error(
+      "header must be used within FormContextProvider"
+    );
+  };
+  
+  const {year, 
+    setYear, 
+    setSelectedId, 
+    yearBaseline, 
+    yearCeiling} = divContext;
 
-export function Header({ T, openAdd , year, setYear, setSelectedId }:HeaderProps) {
+  const {openAdd} = fContext;
 
     return(
         <View style={s.header}>
             <View style={s.headerTop}>
                 <View>
-                    <T style={{ color: LABEL, letterSpacing: 3.2, textTransform: "uppercase" }}>
+                    <UiText style={{ color: COLORS.label, letterSpacing: 3.2, textTransform: "uppercase" }}>
                     Portfolio
-                    </T>
-                    <T style={{ fontWeight: "bold", letterSpacing: -0.4 }}>
+                    </UiText>
+                    <UiText style={{ fontWeight: "bold", letterSpacing: -0.4 }}>
                     Profit Tracker
-                    </T>
+                    </UiText>
                 </View>
-                <Pressable
-                    onPress={openAdd}
-                    style={({ pressed }) => [s.addBtn, pressed && { opacity: 0.7 }]}
-                >
-                    <Plus size={13} strokeWidth={2.5} color="#fff" />
-                    <T style={{ color: "#fff", fontWeight: "bold" }}>ADD</T>
-                </Pressable>
+                {year < yearBaseline || year > yearCeiling? 
+                  (
+                    null
+                  ) : (
+                    <Pressable
+                      onPress={openAdd}
+                      style={({ pressed }) => [s.addBtn, pressed && { opacity: 0.7 }]}
+                    >
+                      <Plus size={13} strokeWidth={2.5} color="#fff" />
+                      <UiText style={{ color: "#fff", fontWeight: "bold" }}>ADD</UiText>
+                    </Pressable>
+                  )
+                }
             </View>
 
                     <View style={s.yearNav}>
@@ -59,9 +73,24 @@ export function Header({ T, openAdd , year, setYear, setSelectedId }:HeaderProps
                         }}
                         style={{ padding: 4 }}
                       >
-                        <ChevronLeft size={16} color={MUTED} />
+                        <ChevronLeft size={16} color={COLORS.muted} />
                       </Pressable>
-                      <T style={{ fontWeight: "bold", letterSpacing: 3.2 }}>{year}</T>
+
+                        <TextInput
+                          value={String(year)}
+                          keyboardType="number-pad"
+                          onChangeText={(text)=>{
+                            if (/^\d{0,4}$/.test(text)) {
+                              setYear(Number(text));
+                              setSelectedId(null);
+                            }
+                          }}
+                          style={{ fontWeight: "bold", letterSpacing: 3.2 ,
+                                    fontFamily: FONTS.mono,
+                                    fontSize: 16,
+                                    color: COLORS.ink,}}
+                        /> 
+                      
                       <Pressable
                         onPress={() => {
                           setYear((y) => y + 1)
@@ -69,7 +98,7 @@ export function Header({ T, openAdd , year, setYear, setSelectedId }:HeaderProps
                         }}
                         style={{ padding: 4 }}
                       >
-                        <ChevronRight size={16} color={MUTED} />
+                        <ChevronRight size={16} color={COLORS.muted} />
                       </Pressable>
                     </View>
             </View>
@@ -77,12 +106,12 @@ export function Header({ T, openAdd , year, setYear, setSelectedId }:HeaderProps
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: BG },
+  root: { flex: 1, backgroundColor: COLORS.background },
 
     header: {
-    backgroundColor: CARD,
+    backgroundColor: COLORS.card,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER,
+    borderBottomColor: COLORS.border,
     paddingHorizontal: 16,
     paddingTop: 48,
     paddingBottom: 16,
@@ -97,7 +126,7 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: INK,
+    backgroundColor: COLORS.ink,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 2,
@@ -108,7 +137,7 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "#f4f4f7",
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: COLORS.border,
     borderRadius: 2,
     paddingHorizontal: 12,
     paddingVertical: 8,

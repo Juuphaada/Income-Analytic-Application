@@ -1,89 +1,67 @@
+import { UiText } from "@/components/ui-text";
+import { COLORS, FONTS } from "@/constants/theme";
+import { dividendContext } from "@/Context/dividendContext";
+import { formContext } from "@/Context/formContext";
+import { fmt } from '@/utils/format';
 import {
     Check,
     X
 } from "lucide-react-native";
+import { useContext } from 'react';
 import {
     KeyboardAvoidingView,
     Platform,
     Pressable,
     ScrollView,
     StyleSheet,
-    Text,
     TextInput,
     View
 } from "react-native";
 
-// ── Theme tokens (light) ──
-const GREEN = "#00a854"
-const RED = "#d93a3a"
-const MUTED = "#a0a0b0"
-const LABEL = "#9090a0"
-const INK = "#111118"
-const BG = "#fafafc" // background
-const CARD = "#ffffff" // card
-const BORDER = "rgba(0,0,0,0.08)" // border
-const MUTED_FG = "#6b6b7b" // muted-foreground
+export function Form(){
 
-const MONO = Platform.select({
-  ios: "Menlo",
-  android: "monospace",
-  default: "monospace",
-})
-
-interface StockRecord {
-  id: string
-  stock: string
-  month: number
-  returnRate: number
-  shares: number
-}
-
-type FormMode = { type: "add" } | { type: "edit"; record: StockRecord }
-
-type FormProps = {
-    formMode: FormMode | null;
-    T: React.ComponentType<React.ComponentProps<typeof Text>>
-    year:number;
-    MONTHS:string[];
-    setFormMode: React.Dispatch<React.SetStateAction<FormMode | null>>;
-    form: {
-        stock: string;
-        month: number;
-        returnRate: string;
-        shares: string;
+    const divContext = useContext(dividendContext);
+    const fContext = useContext(formContext);
+    
+    if (!divContext) {
+        throw new Error(
+        "header must be used within DividendContextProvider"
+        );
     };
-    setForm: React.Dispatch<React.SetStateAction<{
-        stock: string;
-        month: number;
-        returnRate: string;
-        shares: string;
-    }>>;
-    previewProfit: number | null;
-    handleSubmit: () => void;
-    fmt: (n: number, d?: number) => string;
-};
+    if (!fContext) {
+        throw new Error(
+        "header must be used within FormContextProvider"
+        );
+    };
+    
+    const {year,MONTHS} = divContext;
+    const {formMode,
+        setFormMode,
+        form,
+        setForm,
+        previewProfit,
+        handleSubmit} = fContext;
 
-export function Form({formMode, T, year, MONTHS, setFormMode, form, setForm, previewProfit, handleSubmit, fmt}:FormProps){
     return(
         <> 
         {formMode && (
             <KeyboardAvoidingView
                 style={s.formScreen}
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
             >
             <View style={s.formHeader}>
                 <View>
-                <T style={{ color: LABEL, letterSpacing: 1.9, textTransform: "uppercase", marginBottom: 2 }}>
+                <UiText style={{ color: COLORS.label, letterSpacing: 1.9, textTransform: "uppercase", marginBottom: 2 }}>
                     {formMode.type === "edit" ? "Editing" : "New Entry"} · {year}
-                </T>
-                <T style={{ fontWeight: "bold", letterSpacing: -0.4 }}>
+                </UiText>
+                <UiText style={{ fontWeight: "bold", letterSpacing: -0.4 }}>
                     {formMode.type === "edit"
-                    ? `${formMode.record.stock} — ${MONTHS[formMode.record.month - 1]}`
+                    ? `${formMode.record.symbol} — ${MONTHS[formMode.record.month - 1]}`
                     : "Add Record"}
-                </T>
+                </UiText>
                 </View>
                 <Pressable onPress={() => setFormMode(null)} style={s.closeBtn}>
-                <X size={15} color={MUTED_FG} />
+                <X size={15} color={COLORS.mutedForeground} />
                 </Pressable>
             </View>
 
@@ -93,7 +71,7 @@ export function Form({formMode, T, year, MONTHS, setFormMode, form, setForm, pre
                 keyboardShouldPersistTaps="handled"
             >
                 <View style={{ gap: 8 }}>
-                <T style={s.fieldLabel}>Stock Symbol</T>
+                <UiText style={s.fieldLabel}>Stock Symbol</UiText>
                 <TextInput
                     placeholder="e.g. AAPL"
                     placeholderTextColor="rgba(17,17,24,0.4)"
@@ -106,7 +84,7 @@ export function Form({formMode, T, year, MONTHS, setFormMode, form, setForm, pre
                 </View>
 
                 <View style={{ gap: 8 }}>
-                <T style={s.fieldLabel}>Month</T>
+                <UiText style={s.fieldLabel}>Month</UiText>
                 <View style={s.monthGrid}>
                     {MONTHS.map((m, i) => {
                     const active = form.month === i + 1
@@ -116,10 +94,10 @@ export function Form({formMode, T, year, MONTHS, setFormMode, form, setForm, pre
                         onPress={() => setForm((f) => ({ ...f, month: i + 1 }))}
                         style={[
                             s.monthBtn,
-                            { backgroundColor: active ? INK : "#eaeaee" },
+                            { backgroundColor: active ? COLORS.ink : "#eaeaee" },
                         ]}
                         >
-                        <T
+                        <UiText
                             style={{
                             fontWeight: "600",
                             letterSpacing: 0.8,
@@ -127,7 +105,7 @@ export function Form({formMode, T, year, MONTHS, setFormMode, form, setForm, pre
                             }}
                         >
                             {m}
-                        </T>
+                        </UiText>
                         </Pressable>
                     )
                     })}
@@ -136,18 +114,18 @@ export function Form({formMode, T, year, MONTHS, setFormMode, form, setForm, pre
 
                 <View style={{ flexDirection: "row", gap: 16 }}>
                 <View style={{ flex: 1, gap: 8 }}>
-                    <T style={s.fieldLabel}>Dividend Rate</T>
+                    <UiText style={s.fieldLabel}>Dividend Rate</UiText>
                     <TextInput
                     keyboardType="decimal-pad"
                     placeholder="12.5"
                     placeholderTextColor="rgba(17,17,24,0.4)"
-                    value={form.returnRate}
-                    onChangeText={(v) => setForm((f) => ({ ...f, returnRate: v }))}
+                    value={form.dividendRate}
+                    onChangeText={(v) => setForm((f) => ({ ...f, dividendRate: v }))}
                     style={s.input}
                     />
                 </View>
                 <View style={{ flex: 1, gap: 8 }}>
-                    <T style={s.fieldLabel}>Share Amount</T>
+                    <UiText style={s.fieldLabel}>Share Amount</UiText>
                     <TextInput
                     keyboardType="number-pad"
                     placeholder="100"
@@ -171,18 +149,18 @@ export function Form({formMode, T, year, MONTHS, setFormMode, form, setForm, pre
                     },
                 ]}
                 >
-                <T style={{ fontWeight: "bold", letterSpacing: 0.8, color: LABEL }}>
+                <UiText style={{ fontWeight: "bold", letterSpacing: 0.8, color: COLORS.label }}>
                     RATE × SHARES
-                </T>
-                <T
+                </UiText>
+                <UiText
                     style={{
                     fontSize: 18,
                     fontWeight: "bold",
-                    color: previewProfit !== null ? GREEN : "#d0d0d8",
+                    color: previewProfit !== null ? COLORS.green : "#d0d0d8"
                     }}
                 >
                     {previewProfit !== null ? fmt(previewProfit, 2) : "—"}
-                </T>
+                </UiText>
                 </View>
             </ScrollView>
 
@@ -192,9 +170,9 @@ export function Form({formMode, T, year, MONTHS, setFormMode, form, setForm, pre
                 style={({ pressed }) => [s.submitBtn, pressed && { opacity: 0.7 }]}
                 >
                 <Check size={15} strokeWidth={2.5} color="#fff" />
-                <T style={{ fontSize: 14, fontWeight: "bold", letterSpacing: 1.6, color: "#fff" }}>
+                <UiText style={{ fontSize: 14, fontWeight: "bold", letterSpacing: 1.6, color: "#fff" }}>
                     {formMode.type === "edit" ? "UPDATE RECORD" : "SAVE RECORD"}
-                </T>
+                </UiText>
                 </Pressable>
             </View>
             </KeyboardAvoidingView>
@@ -208,7 +186,7 @@ const s = StyleSheet.create({
   formScreen: {
     ...StyleSheet.absoluteFill,
     zIndex: 50,
-    backgroundColor: BG,
+    backgroundColor: COLORS.background,
   },
   formHeader: {
     flexDirection: "row",
@@ -217,9 +195,9 @@ const s = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 48,
     paddingBottom: 16,
-    backgroundColor: CARD,
+    backgroundColor: COLORS.card,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER,
+    borderBottomColor: COLORS.border,
   },
   closeBtn: {
     width: 32,
@@ -230,18 +208,18 @@ const s = StyleSheet.create({
     backgroundColor: "#eaeaee",
   },
   fieldLabel: {
-    color: LABEL,
+    color: COLORS.label,
     letterSpacing: 1.9,
     textTransform: "uppercase",
     fontWeight: "500",
   },
   input: {
-    fontFamily: MONO,
+    fontFamily: FONTS.mono,
     fontSize: 16,
-    color: INK,
-    backgroundColor: CARD,
+    color: COLORS.ink,
+    backgroundColor: COLORS.card,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: COLORS.border,
     borderRadius: 2,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -262,7 +240,7 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: CARD,
+    backgroundColor: COLORS.card,
     borderWidth: 1,
     borderRadius: 2,
     paddingHorizontal: 16,
@@ -272,9 +250,9 @@ const s = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 40,
-    backgroundColor: CARD,
+    backgroundColor: COLORS.card,
     borderTopWidth: 1,
-    borderTopColor: BORDER,
+    borderTopColor: COLORS.border,
   },
   submitBtn: {
     flexDirection: "row",
@@ -283,6 +261,6 @@ const s = StyleSheet.create({
     gap: 8,
     paddingVertical: 16,
     borderRadius: 2,
-    backgroundColor: INK,
+    backgroundColor: COLORS.ink,
   }
 })

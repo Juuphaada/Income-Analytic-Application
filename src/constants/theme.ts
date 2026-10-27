@@ -2,10 +2,9 @@
  * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
+import { Platform } from "react-native";
 
 import '@/global.css';
-
-import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
@@ -63,3 +62,24 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+// ── Theme tokens (light) ──
+export const COLORS = {
+  green: "#00a854",
+  red: "#d93a3a",
+  muted: "#a0a0b0",
+  label: "#9090a0",
+  ink: "#111118",
+  background: "#fafafc",
+  card: "#ffffff",
+  border: "rgba(0,0,0,0.08)",
+  mutedForeground: "#6b6b7b",
+} as const;
+
+export const FONTS = {
+  mono: Platform.select({
+    ios: "Menlo",
+    android: "monospace",
+    default: "monospace",
+  }),
+} as const;

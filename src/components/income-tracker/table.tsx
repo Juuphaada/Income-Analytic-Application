@@ -1,80 +1,85 @@
+import { UiText } from "@/components/ui-text";
+import { COLORS } from "@/constants/theme";
+import { dividendContext } from "@/Context/dividendContext";
+import { formContext } from "@/Context/formContext";
+import { fmt } from '@/utils/format';
 import {
-    BarChart3, Pencil, Trash2,
+  BarChart3, Pencil, Trash2,
 } from "lucide-react-native";
-import React, { Fragment, useMemo, useState } from "react";
+import { Fragment, useContext, useMemo, useState } from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
-
-// ── Theme tokens (light) ──
-const GREEN = "#00a854"
-const RED = "#d93a3a"
-const MUTED = "#a0a0b0"
-const LABEL = "#9090a0"
-const INK = "#111118"
-const BG = "#fafafc" // background
-const CARD = "#ffffff" // card
-const BORDER = "rgba(0,0,0,0.08)" // border
-const MUTED_FG = "#6b6b7b" // muted-foreground
-
-interface StockRecord {
-  id: string
-  stock: string
-  month: number
-  returnRate: number
-  shares: number
-}
+import { DividendRow } from "../../interface/dividendInterface";
 
 type SortCol = "month" | "returnRate" | "profit"
 
-type TableProps = {
-    T: React.ComponentType<React.ComponentProps<typeof Text>>
-    fmt: (n: number, d?: number) => string;
-    records:StockRecord[];
-    openAdd: () => void;
-    openEdit:(r: StockRecord) => void;
-    year:number;
-    MONTHS:string[];
-    setSelectedId:React.Dispatch<React.SetStateAction<string | null>>;
-    selectedId:string | null;
-    setDeleteConfirmId:React.Dispatch<React.SetStateAction<string | null>>;
-};
+export function Table() {
+    //get Contexts
+    const divContext = useContext(dividendContext);
+    const fContext = useContext(formContext);
 
-export function Table({ T, fmt, records, openAdd, openEdit, year, MONTHS, setSelectedId, selectedId, setDeleteConfirmId}:TableProps) {
+    if (!divContext) {
+      throw new Error(
+        "table must be used within DividendContextProvider"
+      );
+    };
 
+    if (!fContext) {
+      throw new Error(
+        "table must be used within FormContextProvider"
+      );
+    };
+
+    const {records,
+      year,
+      MONTHS,
+      setDeleteConfirmId,
+      selectedId,
+      setSelectedId,
+      yearBaseline,
+      yearCeiling} = divContext;
+
+    const {openAdd,openEdit} = fContext;
+
+    // useState
     const [sortCol, setSortCol] = useState<SortCol>("month")
     const [sortDir, setSortDir] = useState<1 | -1>(1)
 
     const Arrow = ({ col }: { col: SortCol }) =>
-    sortCol === col ? (
-      <Text style={{ color: GREEN }}>{sortDir === 1 ? " ↑" : " ↓"}</Text>
-    ) : (
-      <Text style={{ opacity: 0.3 }}> ↕</Text>
-    )
+      sortCol === col ? (
+        <Text style={{ color: COLORS.green, fontWeight: "bold"}}>{sortDir === 1 ? " ↑" : " ↓"}</Text>
+      ) : (
+        <Text style={{ opacity: 0.3, fontWeight: "bold" }}> ↕</Text>
+      )
 
-    const groups = useMemo(() => {
-    const map = new Map<string, StockRecord[]>()
-    for (const r of records) {
-      if (!map.has(r.stock)) map.set(r.stock, [])
-      map.get(r.stock)!.push(r)
-    }
-    for (const [, rows] of map) {
-      rows.sort((a, b) => {
-        if (sortCol === "returnRate")
-          return (a.returnRate - b.returnRate) * sortDir
-        if (sortCol === "profit")
-          return (a.returnRate * a.shares - b.returnRate * b.shares) * sortDir
-        return (a.month - b.month) * sortDir
-      })
-    }
-    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
+  //grouping and sorting diplayed records
+  const groups = useMemo(() => {
+
+      const map = new Map<string, DividendRow[]>()
+      for (const r of records) {
+        if (!map.has(r.symbol)) map.set(r.symbol, [])
+        map.get(r.symbol)!.push(r)
+      }
+      for (const [, rows] of map) {
+        rows.sort((a, b) => {
+          if (sortCol === "returnRate")
+            return (a.dividend_rate - b.dividend_rate) * sortDir
+          if (sortCol === "profit")
+            return (a.dividend_rate * a.shares - b.dividend_rate * b.shares) * sortDir
+          return (a.month - b.month) * sortDir
+        })
+      };
+
+      return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
   }, [records, sortCol, sortDir])
 
-    const toggleSort = (col: SortCol) => {
+  //Set sort columns
+  const toggleSort = (col: SortCol) => {
     if (sortCol === col) setSortDir((d) => (d === 1 ? -1 : 1))
     else {
       setSortCol(col)
@@ -83,52 +88,62 @@ export function Table({ T, fmt, records, openAdd, openEdit, year, MONTHS, setSel
   }
 
     return(
-      <View style={{ flex: 1, backgroundColor: BG }}>
+      <View style={{ flex: 1, backgroundColor: COLORS.background }}>
         {records.length === 0 ? (
-          <View style={s.empty}>
-            <BarChart3 size={28} color="#d0d0d8" />
-            <T style={{ color: LABEL }}>No records for {year}</T>
-            <Pressable onPress={openAdd}>
-              <T style={{ color: GREEN }}>Add first entry →</T>
-            </Pressable>
-          </View>
+          year <= yearBaseline || year > yearCeiling? 
+          (
+            <View style={s.empty}>
+              <UiText style={{ color: COLORS.label }}>Invaild year</UiText>
+              <UiText style={{ color: COLORS.label}}>" Year must be in between the defined baseline and the current year ({yearBaseline} - {yearCeiling}) "</UiText>
+            </View>
+          ) 
+          : 
+          (
+            <View style={s.empty}>
+              <BarChart3 size={28} color="#d0d0d8" />
+              <UiText style={{ color: COLORS.label }}>No records for {year}</UiText>
+              <Pressable onPress={openAdd}>
+                <UiText style={{ color: COLORS.green }}>Add first entry →</UiText>
+              </Pressable>
+            </View>
+          )
         ) : (
           <>
             {/* Table head */}
             <View style={s.thead}>
               <View style={[s.cStock, { paddingLeft: 12 }]}>
-                <T style={s.th}>STOCK</T>
+                <UiText style={s.th}>STOCK</UiText>
               </View>
               <Pressable style={s.cMonth} onPress={() => toggleSort("month")}>
-                <T style={s.th}>
+                <UiText style={s.th}>
                   MM
                   <Arrow col="month" />
-                </T>
+                </UiText>
               </Pressable>
               <Pressable style={s.cRate} onPress={() => toggleSort("returnRate")}>
-                <T style={s.th}>
+                <UiText style={s.th}>
                   RATE
                   <Arrow col="returnRate" />
-                </T>
+                </UiText>
               </Pressable>
               <View style={s.cShares}>
-                <T style={s.th}>SHARES</T>
+                <UiText style={s.th}>SHARES</UiText>
               </View>
               <Pressable style={s.cProfit} onPress={() => toggleSort("profit")}>
-                <T style={s.th}>
+                <UiText style={s.th}>
                   R×S
                   <Arrow col="profit" />
-                </T>
+                </UiText>
               </Pressable>
             </View>
 
             <ScrollView>
               {groups.map(([stockName, rows]) =>
                 rows.map((r, rowIdx) => {
-                  const profit = r.returnRate * r.shares
-                  const isFirst = rowIdx === 0
-                  const isLast = rowIdx === rows.length - 1
-                  const isSelected = selectedId === r.id
+                  const profit = r.dividend_rate * r.shares;
+                  const isFirst = rowIdx === 0;
+                  const isLast = rowIdx === rows.length - 1;
+                  const isSelected = selectedId === r.dividend_id;
 
                   const lastBorder = {
                     borderBottomWidth: 2,
@@ -140,9 +155,9 @@ export function Table({ T, fmt, records, openAdd, openEdit, year, MONTHS, setSel
                   }
 
                   return (
-                    <Fragment key={r.id}>
+                    <Fragment key={r.dividend_id}>
                       <Pressable
-                        onPress={() => setSelectedId(isSelected ? null : r.id)}
+                        onPress={() => setSelectedId(isSelected ? null : r.dividend_id)}
                         style={[
                           s.row,
                           {
@@ -160,35 +175,35 @@ export function Table({ T, fmt, records, openAdd, openEdit, year, MONTHS, setSel
                               paddingLeft: 12,
                               paddingVertical: 10,
                               borderLeftWidth: 2,
-                              borderLeftColor: isFirst ? INK : "transparent",
+                              borderLeftColor: isFirst ? COLORS.ink : "transparent",
                             },
                           ]}
                         >
-                          <T
+                          <UiText
                             style={{
                               fontWeight: "bold",
                               letterSpacing: 0.8,
-                              color: isFirst ? INK : "transparent",
+                              color: COLORS.ink
                             }}
                           >
-                            {stockName}
-                          </T>
+                            {isFirst ? `${stockName}`:""}
+                          </UiText>
                         </View>
                         <View style={[s.cMonth, { paddingVertical: 16 }]}>
-                          <T style={{ color: MUTED }}>{MONTHS[r.month - 1]}</T>
+                          <UiText style={{ color: COLORS.muted }}>{MONTHS[r.month - 1]}</UiText>
                         </View>
                         <View style={[s.cRate, { paddingVertical: 10 }]}>
-                          <T style={{ color: GREEN, fontWeight: "600" }}>
-                            {fmt(r.returnRate)}
-                          </T>
+                          <UiText style={{ color: COLORS.green, fontWeight: "600" }}>
+                            {fmt(r.dividend_rate)}
+                          </UiText>
                         </View>
                         <View style={[s.cShares, { paddingVertical: 10 }]}>
-                          <T style={{ color: MUTED }}>{r.shares}</T>
+                          <UiText style={{ color: COLORS.muted }}>{r.shares}</UiText>
                         </View>
                         <View style={[s.cProfit, { paddingVertical: 10 }]}>
-                          <T style={{ color: GREEN, fontWeight: "600" }}>
+                          <UiText style={{ color: COLORS.green, fontWeight: "600" }}>
                             {fmt(profit, 1)}
-                          </T>
+                          </UiText>
                         </View>
                       </Pressable>
 
@@ -211,11 +226,11 @@ export function Table({ T, fmt, records, openAdd, openEdit, year, MONTHS, setSel
                               pressed && { opacity: 0.7 },
                             ]}
                           >
-                            <Pencil size={10} strokeWidth={2.5} color={INK} />
-                            <T style={s.actionTxt}>EDIT</T>
+                            <Pencil size={10} strokeWidth={2.5} color={COLORS.ink} />
+                            <UiText style={s.actionTxt}>EDIT</UiText>
                           </Pressable>
                           <Pressable
-                            onPress={() => setDeleteConfirmId(r.id)}
+                            onPress={() => setDeleteConfirmId(r.dividend_id)}
                             style={({ pressed }) => [
                               s.actionBtn,
                               {
@@ -225,18 +240,18 @@ export function Table({ T, fmt, records, openAdd, openEdit, year, MONTHS, setSel
                               pressed && { opacity: 0.7 },
                             ]}
                           >
-                            <Trash2 size={10} strokeWidth={2.5} color={RED} />
-                            <T style={[s.actionTxt, { color: RED }]}>DELETE</T>
+                            <Trash2 size={10} strokeWidth={2.5} color={COLORS.red} />
+                            <UiText style={[s.actionTxt, { color: COLORS.red }]}>DELETE</UiText>
                           </Pressable>
-                          <T
+                          <UiText
                             style={{
                               marginLeft: "auto",
-                              color: LABEL,
+                              color: COLORS.label,
                               letterSpacing: 1.6,
                             }}
                           >
                             {MONTHS[r.month - 1].toUpperCase()} {year}
-                          </T>
+                          </UiText>
                         </View>
                       )}
                     </Fragment>
@@ -255,18 +270,18 @@ const s = StyleSheet.create({
   thead: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: CARD,
+    backgroundColor: COLORS.card,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER,
+    borderBottomColor: COLORS.border,
     paddingVertical: 10,
   },
-  th: { fontSize: 14, fontWeight: "500", color: MUTED_FG },
+  th: { fontSize: 14, fontWeight: "500", color: COLORS.mutedForeground },
   row: { flexDirection: "row", alignItems: "center" },
   cStock: { flex: 1.15, justifyContent: "center" },
   cMonth: { flex: 0.85, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
   cRate: { flex: 1.1, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
-  cShares: { flex: 1.1, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
-  cProfit: { flex: 1.2, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 12 },
+  cShares: { flex: 1.8, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
+  cProfit: { flex: 1.8, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 12 },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -289,6 +304,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 96,
+    paddingHorizontal: 50,
     gap: 12,
   }
 })

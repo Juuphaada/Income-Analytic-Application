@@ -1,62 +1,41 @@
+import { UiText } from "@/components/ui-text";
+import { COLORS } from "@/constants/theme";
+import { dividendContext } from '@/Context/dividendContext';
+import { fmt } from '@/utils/format';
+import { useContext } from 'react';
 import {
-    StyleSheet,
-    Text,
-    View
+  StyleSheet,
+  View
 } from "react-native";
 
-// ── Theme tokens (light) ──
-const GREEN = "#00a854"
-const RED = "#d93a3a"
-const MUTED = "#a0a0b0"
-const LABEL = "#9090a0"
-const INK = "#111118"
-const BG = "#fafafc" // background
-const CARD = "#ffffff" // card
-const BORDER = "rgba(0,0,0,0.08)" // border
-const MUTED_FG = "#6b6b7b" // muted-foreground
-
-interface StockRecord {
-  id: string
-  stock: string
-  month: number
-  returnRate: number
-  shares: number
-}
-
-type InfoProps = {
-    T: React.ComponentType<React.ComponentProps<typeof Text>>
-    totalProfit: number;
-    fmt: (n: number, d?: number) => string;
-    gains: number;
-    losses: number;
-    best: StockRecord | null
-};
-
-export function Info({ T, totalProfit, fmt, gains, losses, best}:InfoProps) {
-    
+export function Info() {
+    //get dividendContext
+      const context = useContext(dividendContext);
+      if (!context) {
+        throw new Error(
+          "info must be used within DividendContextProvider"
+        );
+      }
+      const {
+        totalProfit,
+        best,
+      } = context;
 
     return(
       <View style={s.summary}>
         <View style={[s.summaryCell, s.summaryCellBorder]}>
-          <T style={s.summaryLabel}>Total Profit</T>
-          <T style={{ fontWeight: "bold", color: totalProfit >= 0 ? GREEN : RED }}>
+          <UiText style={s.summaryLabel}>Total</UiText>
+          <UiText style={{ fontWeight: "bold", color: totalProfit >= 0 ? COLORS.green : COLORS.red }}>
             {totalProfit >= 0 ? "+" : ""}
             {fmt(totalProfit, 0)}
-          </T>
+          </UiText>
         </View>
-        <View style={[s.summaryCell, s.summaryCellBorder]}>
-          <T style={s.summaryLabel}>Win / Loss</T>
-          <T style={{ fontWeight: "bold" }}>
-            <Text style={{ color: GREEN }}>{gains}</Text>
-            <Text style={{ color: MUTED }}> / </Text>
-            <Text style={{ color: RED }}>{losses}</Text>
-          </T>
-        </View>
+        
         <View style={s.summaryCell}>
-          <T style={s.summaryLabel}>Best Rate</T>
-          <T style={{ fontWeight: "bold", color: GREEN }}>
-            {best ? fmt(best.returnRate) : "—"}
-          </T>
+          <UiText style={s.summaryLabel}>Best Rate</UiText>
+          <UiText style={{ fontWeight: "bold", color: COLORS.green }}>
+            {best ? best.symbol + " " + fmt(best.dividend_rate) : "—"}
+          </UiText>
         </View>
       </View>
     )
@@ -65,9 +44,9 @@ export function Info({ T, totalProfit, fmt, gains, losses, best}:InfoProps) {
 const s = StyleSheet.create({
     summary: {
         flexDirection: "row",
-        backgroundColor: CARD,
+        backgroundColor: COLORS.card,
         borderBottomWidth: 1,
-        borderBottomColor: BORDER,
+        borderBottomColor: COLORS.border,
     },
     summaryCell: {
         flex: 1,
@@ -76,10 +55,10 @@ const s = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 8,
     },
-    summaryCellBorder: { borderRightWidth: 1, borderRightColor: BORDER },
+    summaryCellBorder: { borderRightWidth: 1, borderRightColor: COLORS.border },
     summaryLabel: {
         fontSize: 14,
-        color: LABEL,
+        color: COLORS.label,
         textTransform: "uppercase",
         letterSpacing: 1.4,
         marginBottom: 4,
