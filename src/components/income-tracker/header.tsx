@@ -58,7 +58,7 @@ export function Header() {
                       onPress={openAdd}
                       style={({ pressed }) => [s.addBtn, pressed && { opacity: 0.7 }]}
                     >
-                      <Plus size={13} strokeWidth={2.5} color="#fff" />
+                      <Plus size={20} strokeWidth={2.5} color="#fff" />
                       <UiText style={{ color: "#fff", fontWeight: "bold" }}>ADD</UiText>
                     </Pressable>
                   )
@@ -73,7 +73,7 @@ export function Header() {
                         }}
                         style={{ padding: 4 }}
                       >
-                        <ChevronLeft size={16} color={COLORS.muted} />
+                        <ChevronLeft size={30} color={COLORS.muted} />
                       </Pressable>
 
                         <TextInput
@@ -98,7 +98,7 @@ export function Header() {
                         }}
                         style={{ padding: 4 }}
                       >
-                        <ChevronRight size={16} color={COLORS.muted} />
+                        <ChevronRight size={30} color={COLORS.muted} />
                       </Pressable>
                     </View>
             </View>

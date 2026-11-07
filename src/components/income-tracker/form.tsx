@@ -61,7 +61,7 @@ export function Form(){
                 </UiText>
                 </View>
                 <Pressable onPress={() => setFormMode(null)} style={s.closeBtn}>
-                <X size={15} color={COLORS.mutedForeground} />
+                    <X size={15} color={COLORS.mutedForeground} />
                 </Pressable>
             </View>
 
@@ -139,29 +139,30 @@ export function Form(){
 
                 {/* Preview */}
                 <View
-                style={[
-                    s.preview,
-                    {
-                    borderColor:
-                        previewProfit !== null
-                        ? "rgba(0,168,84,0.25)"
-                        : "rgba(0,0,0,0.08)",
-                    },
-                ]}
+                    style={[
+                        s.preview,
+                        {
+                            borderColor:
+                                previewProfit !== null
+                                ? "rgba(0,168,84,0.25)"
+                                : "rgba(0,0,0,0.08)"
+                        }
+                    ]}
                 >
-                <UiText style={{ fontWeight: "bold", letterSpacing: 0.8, color: COLORS.label }}>
-                    RATE × SHARES
-                </UiText>
-                <UiText
-                    style={{
-                    fontSize: 18,
-                    fontWeight: "bold",
-                    color: previewProfit !== null ? COLORS.green : "#d0d0d8"
-                    }}
-                >
-                    {previewProfit !== null ? fmt(previewProfit, 2) : "—"}
-                </UiText>
+                    <UiText style={{ fontWeight: "bold", letterSpacing: 0.8, color: COLORS.label }}>
+                        RATE × SHARES
+                    </UiText>
+                    <UiText
+                        style={{
+                            fontSize: 18,
+                            fontWeight: "bold",
+                            color: previewProfit !== null ? COLORS.green : "#d0d0d8",
+                        }}
+                    >
+                        {previewProfit !== null ? fmt(previewProfit, 2) : "—"}
+                    </UiText>
                 </View>
+
             </ScrollView>
 
             <View style={s.formFooter}>
@@ -237,8 +238,8 @@ const s = StyleSheet.create({
     borderRadius: 2,
   },
   preview: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: "column",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     backgroundColor: COLORS.card,
     borderWidth: 1,

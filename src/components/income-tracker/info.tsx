@@ -1,7 +1,7 @@
 import { UiText } from "@/components/ui-text";
 import { COLORS } from "@/constants/theme";
 import { dividendContext } from '@/Context/dividendContext';
-import { fmt } from '@/utils/format';
+import { slackenAbbrevFormat } from '@/utils/format';
 import { useContext } from 'react';
 import {
   StyleSheet,
@@ -27,14 +27,14 @@ export function Info() {
           <UiText style={s.summaryLabel}>Total</UiText>
           <UiText style={{ fontWeight: "bold", color: totalProfit >= 0 ? COLORS.green : COLORS.red }}>
             {totalProfit >= 0 ? "+" : ""}
-            {fmt(totalProfit, 0)}
+            {slackenAbbrevFormat(totalProfit)}
           </UiText>
         </View>
         
         <View style={s.summaryCell}>
           <UiText style={s.summaryLabel}>Best Rate</UiText>
           <UiText style={{ fontWeight: "bold", color: COLORS.green }}>
-            {best ? best.symbol + " " + fmt(best.dividend_rate) : "—"}
+            {best ? best.symbol + " " + slackenAbbrevFormat(best.dividend_rate) : "—"}
           </UiText>
         </View>
       </View>

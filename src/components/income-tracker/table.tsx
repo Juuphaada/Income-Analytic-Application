@@ -2,7 +2,7 @@ import { UiText } from "@/components/ui-text";
 import { COLORS } from "@/constants/theme";
 import { dividendContext } from "@/Context/dividendContext";
 import { formContext } from "@/Context/formContext";
-import { fmt } from '@/utils/format';
+import { fmt, mediumAbbrevFormat } from '@/utils/format';
 import {
   BarChart3, Pencil, Trash2,
 } from "lucide-react-native";
@@ -88,9 +88,9 @@ export function Table() {
   }
 
     return(
-      <View style={{ flex: 1, backgroundColor: COLORS.background }}>
+      <View style={{ flex: 0, backgroundColor: COLORS.background, height:500}}>
         {records.length === 0 ? (
-          year <= yearBaseline || year > yearCeiling? 
+          year < yearBaseline || year > yearCeiling? 
           (
             <View style={s.empty}>
               <UiText style={{ color: COLORS.label }}>Invaild year</UiText>
@@ -198,11 +198,11 @@ export function Table() {
                           </UiText>
                         </View>
                         <View style={[s.cShares, { paddingVertical: 10 }]}>
-                          <UiText style={{ color: COLORS.muted }}>{r.shares}</UiText>
+                          <UiText style={{ color: COLORS.muted }}>{fmt(r.shares)}</UiText>
                         </View>
                         <View style={[s.cProfit, { paddingVertical: 10 }]}>
                           <UiText style={{ color: COLORS.green, fontWeight: "600" }}>
-                            {fmt(profit, 1)}
+                            {mediumAbbrevFormat(profit)}
                           </UiText>
                         </View>
                       </Pressable>
@@ -277,11 +277,11 @@ const s = StyleSheet.create({
   },
   th: { fontSize: 14, fontWeight: "500", color: COLORS.mutedForeground },
   row: { flexDirection: "row", alignItems: "center" },
-  cStock: { flex: 1.15, justifyContent: "center" },
-  cMonth: { flex: 0.85, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
-  cRate: { flex: 1.1, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
-  cShares: { flex: 1.8, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
-  cProfit: { flex: 1.8, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 12 },
+  cStock: { flex: 1, justifyContent: "center" },
+  cMonth: { flex: 0.80, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
+  cRate: { flex: 1.9, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
+  cShares: { flex: 1.2, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
+  cProfit: { flex: 1.9, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 12 },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",

@@ -72,13 +72,14 @@ export const FormContextProvider = ({ children }:FormProviderProps) => {
 
     function checkIsNumInputInvalid(rateNum:number,sharesNum:number) {
       if (
-          isNaN(rateNum) || 
-          isNaN(sharesNum) || 
-          !Number.isFinite(rateNum) ||
+          isNaN(sharesNum) ||
           !Number.isSafeInteger(sharesNum) || 
-          rateNum < 0 ||
           sharesNum <= 0 ||
-          (sharesNum % 1) !== 0
+          (sharesNum % 1) !== 0 ||
+          isNaN(rateNum) || 
+          !Number.isFinite(rateNum) ||
+          rateNum > Number.MAX_SAFE_INTEGER ||
+          rateNum < 0
         ) {
           return true;
         }
