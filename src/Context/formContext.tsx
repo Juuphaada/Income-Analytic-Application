@@ -72,14 +72,11 @@ export const FormContextProvider = ({ children }:FormProviderProps) => {
 
     function checkIsNumInputInvalid(rateNum:number,sharesNum:number) {
       if (
-          isNaN(sharesNum) ||
-          !Number.isSafeInteger(sharesNum) || 
-          sharesNum <= 0 ||
-          (sharesNum % 1) !== 0 ||
-          isNaN(rateNum) || 
-          !Number.isFinite(rateNum) ||
-          rateNum > Number.MAX_SAFE_INTEGER ||
-          rateNum < 0
+          isNaN(sharesNum) || isNaN(rateNum) || 
+          !Number.isFinite(sharesNum) || !Number.isFinite(rateNum) ||
+          sharesNum > Number.MAX_SAFE_INTEGER || rateNum > Number.MAX_SAFE_INTEGER ||
+          sharesNum <= 0 || rateNum <= 0 ||
+          rateNum *sharesNum > Number.MAX_SAFE_INTEGER 
         ) {
           return true;
         }
@@ -105,8 +102,8 @@ export const FormContextProvider = ({ children }:FormProviderProps) => {
     const handleSubmit = async() => {
       if (!formMode) return;
       
-      const rate = Number(form.dividendRate)
-      const sh = Number(form.shares)
+      const rate = Number(Number(form.dividendRate).toFixed(6))
+      const sh = Number(Number(form.shares).toFixed(6))
 
       if (!form.stock.trim() || checkIsNumInputInvalid(rate,sh))
       return;

@@ -10,8 +10,9 @@ export function UiText({ style, ...props }: UiTextProps) {
       style={[
         {
           fontFamily: FONTS.mono,
-          fontSize: 16,
+          fontSize: 14.9,
           color: COLORS.ink,
+          letterSpacing:0
         },
         style,
       ]}

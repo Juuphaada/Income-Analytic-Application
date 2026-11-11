@@ -2,9 +2,9 @@ import { UiText } from "@/components/ui-text";
 import { COLORS } from "@/constants/theme";
 import { dividendContext } from "@/Context/dividendContext";
 import { formContext } from "@/Context/formContext";
-import { fmt, mediumAbbrevFormat } from '@/utils/format';
+import { columnsFitNumFormat } from '@/utils/format';
 import {
-  BarChart3, Pencil, Trash2,
+  BarChart3, Pencil, Trash2
 } from "lucide-react-native";
 import { Fragment, useContext, useMemo, useState } from "react";
 import {
@@ -173,9 +173,10 @@ export function Table() {
                             s.cStock,
                             {
                               paddingLeft: 12,
-                              paddingVertical: 10,
+                              paddingVertical: 16,
                               borderLeftWidth: 2,
                               borderLeftColor: isFirst ? COLORS.ink : "transparent",
+                              alignSelf: 'flex-start'
                             },
                           ]}
                         >
@@ -189,20 +190,20 @@ export function Table() {
                             {isFirst ? `${stockName}`:""}
                           </UiText>
                         </View>
-                        <View style={[s.cMonth, { paddingVertical: 16 }]}>
+                        <View style={[s.cMonth, { paddingVertical: 16, alignSelf: 'flex-start' }]}>
                           <UiText style={{ color: COLORS.muted }}>{MONTHS[r.month - 1]}</UiText>
                         </View>
-                        <View style={[s.cRate, { paddingVertical: 10 }]}>
+                        <View style={[s.cRate, { paddingVertical: 16 , alignSelf: 'flex-start'}]}>
                           <UiText style={{ color: COLORS.green, fontWeight: "600" }}>
-                            {fmt(r.dividend_rate)}
+                            {columnsFitNumFormat(r.dividend_rate)}
                           </UiText>
                         </View>
-                        <View style={[s.cShares, { paddingVertical: 10 }]}>
-                          <UiText style={{ color: COLORS.muted }}>{fmt(r.shares)}</UiText>
+                        <View style={[s.cShares, { paddingVertical: 16, alignSelf: 'flex-start'}]}>
+                          <UiText style={{ color: COLORS.muted }}>{columnsFitNumFormat(r.shares)}</UiText>
                         </View>
-                        <View style={[s.cProfit, { paddingVertical: 10 }]}>
+                        <View style={[s.cProfit, { paddingVertical: 16 ,alignSelf: 'flex-start'}]}>
                           <UiText style={{ color: COLORS.green, fontWeight: "600" }}>
-                            {mediumAbbrevFormat(profit)}
+                            {columnsFitNumFormat(profit)}
                           </UiText>
                         </View>
                       </Pressable>
@@ -277,11 +278,11 @@ const s = StyleSheet.create({
   },
   th: { fontSize: 14, fontWeight: "500", color: COLORS.mutedForeground },
   row: { flexDirection: "row", alignItems: "center" },
-  cStock: { flex: 1, justifyContent: "center" },
+  cStock: { flex: 1.1, justifyContent: "center" },
   cMonth: { flex: 0.80, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
-  cRate: { flex: 1.9, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
-  cShares: { flex: 1.2, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
-  cProfit: { flex: 1.9, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 12 },
+  cRate: { flex: 1.7, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
+  cShares: { flex: 1.7, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
+  cProfit: { flex: 1.8, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 12 },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",

@@ -177,8 +177,8 @@ export async function modifyDividend(
     throw new Error("Invalid dividend rate");
   }
 
-  if (!Number.isSafeInteger(insert_shares) || insert_shares <= 0) {
-    throw new Error("Shares must be a positive integer");
+  if (!Number.isFinite(insert_shares) || insert_shares <= 0) {
+    throw new Error("Shares must be a positive number");
   }
 
   if (

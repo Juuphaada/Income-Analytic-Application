@@ -159,7 +159,7 @@ export function Form(){
                             color: previewProfit !== null ? COLORS.green : "#d0d0d8",
                         }}
                     >
-                        {previewProfit !== null ? fmt(previewProfit, 2) : "—"}
+                        {previewProfit !== null ? fmt(previewProfit,12) : "—"}
                     </UiText>
                 </View>
 

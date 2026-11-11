@@ -1,7 +1,28 @@
-export const fmt = (n: number, d = 2) => {
-  const [int, dec] = (Math.floor(n * 100)/ 100).toString().split(".")
-  const withCommas = int.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-  return (n < 0 ? "-" : "") + withCommas + (dec ? "." + dec : "")
+export const fmt = (n: number, d : number) => {
+  const [int, dec] = Math.abs(n).toString().split(".")
+  const withCommas = int.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return (n < 0 ? "-" : "") + withCommas + (dec ? "." + dec : "");
+}
+
+export const columnsFitNumFormat = (n:number) => {
+  const [int, dec] = Math.abs(n).toString().split(".")
+  const withCommas = int.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const text = (n < 0 ? "-" : "") + withCommas + (dec ? "." + dec : "");
+
+  let count = 0;
+        let result = '';
+
+        for (let char of text) {
+            result += char;
+            if (char === ',' || char === '.') {
+                count++;
+                if (count % 2 === 0) { // Every second occurrence
+                    result += '\n';
+                }
+            }
+        }
+
+  return result;
 }
 
 export const mediumAbbrevFormat = (n : number) => {
