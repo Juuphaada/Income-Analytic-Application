@@ -30,8 +30,6 @@ export async function getDB() {
       
       FOREIGN KEY (stock_id) REFERENCES stocks(stock_id),
 
-      UNIQUE (stock_id, date, year),
-
       CHECK (shares > 0),
       CHECK (tax_rate IS NULL OR tax_rate >= 0)
     );

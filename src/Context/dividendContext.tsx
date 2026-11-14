@@ -75,7 +75,7 @@ export const DividendContextProvider = ({ children }:DividendProviderProps) => {
 
     const totalProfit = useMemo(
         () => records.reduce(
-        (sum, r) => sum + r.dividend_rate * r.shares,
+        (sum, r) => sum + Number((r.dividend_rate*r.shares).toFixed(2)),
         0
     ),
     [records]
@@ -85,7 +85,7 @@ export const DividendContextProvider = ({ children }:DividendProviderProps) => {
     () =>
         records.length > 0
         ? records.reduce(
-            (b, r) => r.dividend_rate > b.dividend_rate ? r : b,
+            (b, r) => r.dividend_rate > b.dividend_rate ? r : b, 
             records[0]
             )
         : null,

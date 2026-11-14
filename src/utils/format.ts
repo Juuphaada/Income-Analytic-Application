@@ -1,4 +1,4 @@
-export const fmt = (n: number, d : number) => {
+export const fmt = (n: number) => {
   const [int, dec] = Math.abs(n).toString().split(".")
   const withCommas = int.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return (n < 0 ? "-" : "") + withCommas + (dec ? "." + dec : "");

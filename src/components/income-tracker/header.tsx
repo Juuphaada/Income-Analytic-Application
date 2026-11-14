@@ -87,8 +87,9 @@ export function Header() {
                           }}
                           style={{ fontWeight: "bold", letterSpacing: 3.2 ,
                                     fontFamily: FONTS.mono,
-                                    fontSize: 16,
-                                    color: COLORS.ink,}}
+                                    fontSize: 18,
+                                    color: COLORS.ink,
+                                    textDecorationLine: 'underline'}}
                         /> 
                       
                       <Pressable

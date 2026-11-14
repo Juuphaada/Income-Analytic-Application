@@ -11,11 +11,13 @@ import {
 export function Info() {
     //get dividendContext
       const context = useContext(dividendContext);
+
       if (!context) {
         throw new Error(
           "info must be used within DividendContextProvider"
         );
       }
+
       const {
         totalProfit,
         best,
@@ -26,15 +28,15 @@ export function Info() {
         <View style={[s.summaryCell, s.summaryCellBorder]}>
           <UiText style={s.summaryLabel}>Total</UiText>
           <UiText style={{ fontWeight: "bold", color: totalProfit >= 0 ? COLORS.green : COLORS.red, textAlign: 'center' }}>
-            {totalProfit >= 0 ? "+" : ""}
-            {fmt(totalProfit,12)}
+            {totalProfit >= 0 ? "" : ""}
+            {fmt(totalProfit)}
           </UiText>
         </View>
         
         <View style={s.summaryCell}>
           <UiText style={s.summaryLabel}>Best Rate</UiText>
           <UiText style={{ fontWeight: "bold", color: COLORS.green , textAlign: 'center'}}>
-            {best ? best.symbol + " " + fmt(best.dividend_rate,12) : "—"}
+            {best ? best.symbol + ": " + fmt(best.dividend_rate) : "—"}
           </UiText>
         </View>
       </View>

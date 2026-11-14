@@ -111,10 +111,10 @@ export function Table() {
           <>
             {/* Table head */}
             <View style={s.thead}>
-              <View style={[s.cStock, { paddingLeft: 12 }]}>
+              <View style={[s.cStock, {paddingLeft : 7}]}>
                 <UiText style={s.th}>STOCK</UiText>
               </View>
-              <Pressable style={s.cMonth} onPress={() => toggleSort("month")}>
+              <Pressable style={[s.cMonth, {paddingLeft : 12}]} onPress={() => toggleSort("month")}>
                 <UiText style={s.th}>
                   MM
                   <Arrow col="month" />
@@ -140,7 +140,7 @@ export function Table() {
             <ScrollView>
               {groups.map(([stockName, rows]) =>
                 rows.map((r, rowIdx) => {
-                  const profit = r.dividend_rate * r.shares;
+                  const profit = Number((r.dividend_rate * r.shares).toFixed(2));
                   const isFirst = rowIdx === 0;
                   const isLast = rowIdx === rows.length - 1;
                   const isSelected = selectedId === r.dividend_id;
@@ -164,6 +164,7 @@ export function Table() {
                             backgroundColor: isSelected
                               ? "rgba(0,168,84,0.06)"
                               : "transparent",
+                            
                           },
                           !isSelected && (isLast ? lastBorder : midBorder),
                         ]}
@@ -172,10 +173,10 @@ export function Table() {
                           style={[
                             s.cStock,
                             {
-                              paddingLeft: 12,
+                              paddingLeft: 7,
                               paddingVertical: 16,
                               borderLeftWidth: 2,
-                              borderLeftColor: isFirst ? COLORS.ink : "transparent",
+                              borderLeftColor: "transparent",
                               alignSelf: 'flex-start'
                             },
                           ]}
@@ -184,25 +185,28 @@ export function Table() {
                             style={{
                               fontWeight: "bold",
                               letterSpacing: 0.8,
-                              color: COLORS.ink
+                              color: COLORS.ink,
+                              alignSelf: 'flex-start'
                             }}
                           >
                             {isFirst ? `${stockName}`:""}
                           </UiText>
                         </View>
-                        <View style={[s.cMonth, { paddingVertical: 16, alignSelf: 'flex-start' }]}>
-                          <UiText style={{ color: COLORS.muted }}>{MONTHS[r.month - 1]}</UiText>
+                        <View style={[s.cMonth, { paddingVertical: 16, alignSelf: 'flex-start'}]}>
+                          <UiText style={{ color: COLORS.muted, alignSelf: 'flex-start'}}>{MONTHS[r.month - 1]}</UiText>
                         </View>
-                        <View style={[s.cRate, { paddingVertical: 16 , alignSelf: 'flex-start'}]}>
-                          <UiText style={{ color: COLORS.green, fontWeight: "600" }}>
+                        <View style={[s.cRate, { paddingVertical: 16, alignSelf: 'flex-start'}]}>
+                          <UiText style={{ color: COLORS.green, fontWeight: "600", alignSelf: 'flex-start'}}>
                             {columnsFitNumFormat(r.dividend_rate)}
                           </UiText>
                         </View>
                         <View style={[s.cShares, { paddingVertical: 16, alignSelf: 'flex-start'}]}>
-                          <UiText style={{ color: COLORS.muted }}>{columnsFitNumFormat(r.shares)}</UiText>
+                          <UiText style={{ color: COLORS.muted, alignSelf: 'flex-start'}}>
+                            {columnsFitNumFormat(r.shares)}
+                          </UiText>
                         </View>
-                        <View style={[s.cProfit, { paddingVertical: 16 ,alignSelf: 'flex-start'}]}>
-                          <UiText style={{ color: COLORS.green, fontWeight: "600" }}>
+                        <View style={[s.cProfit, { paddingVertical: 16, alignSelf: 'flex-start'}]}>
+                          <UiText style={{ color: COLORS.green, fontWeight: "600", alignSelf: 'flex-start'}}>
                             {columnsFitNumFormat(profit)}
                           </UiText>
                         </View>
@@ -222,7 +226,7 @@ export function Table() {
                               s.actionBtn,
                               {
                                 backgroundColor: "#f0f0f4",
-                                borderColor: "rgba(0,0,0,0.1)",
+                                borderColor: "rgba(0,168,84,0.06)",
                               },
                               pressed && { opacity: 0.7 },
                             ]}
@@ -276,13 +280,13 @@ const s = StyleSheet.create({
     borderBottomColor: COLORS.border,
     paddingVertical: 10,
   },
-  th: { fontSize: 14, fontWeight: "500", color: COLORS.mutedForeground },
+  th: { fontSize: 14, fontWeight: "500", color: COLORS.mutedForeground, alignSelf : "flex-start"},
   row: { flexDirection: "row", alignItems: "center" },
   cStock: { flex: 1.1, justifyContent: "center" },
-  cMonth: { flex: 0.80, alignItems: "center", justifyContent: "center", paddingHorizontal: 8 },
-  cRate: { flex: 1.7, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
-  cShares: { flex: 1.7, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 8 },
-  cProfit: { flex: 1.8, alignItems: "flex-end", justifyContent: "center", paddingHorizontal: 12 },
+  cMonth: { flex: 1, justifyContent: "center", paddingHorizontal: 5},
+  cRate: { flex: 1.9, justifyContent: "center", paddingHorizontal: 5 },
+  cShares: { flex: 1.9, justifyContent: "center", paddingHorizontal: 5 },
+  cProfit: { flex: 1.9, justifyContent: "center", paddingRight: 5, paddingLeft: 5 },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",

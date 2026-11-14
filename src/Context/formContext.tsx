@@ -74,9 +74,9 @@ export const FormContextProvider = ({ children }:FormProviderProps) => {
       if (
           isNaN(sharesNum) || isNaN(rateNum) || 
           !Number.isFinite(sharesNum) || !Number.isFinite(rateNum) ||
-          sharesNum > Number.MAX_SAFE_INTEGER || rateNum > Number.MAX_SAFE_INTEGER ||
+          sharesNum > 1000000000 || rateNum > 1000000000 ||
           sharesNum <= 0 || rateNum <= 0 ||
-          rateNum *sharesNum > Number.MAX_SAFE_INTEGER 
+          rateNum *sharesNum > Number.MAX_SAFE_INTEGER
         ) {
           return true;
         }
@@ -84,8 +84,8 @@ export const FormContextProvider = ({ children }:FormProviderProps) => {
     }
 
     const previewProfit = useMemo(() => {
-        const rate = Number(form.dividendRate);
-        const sh = Number(form.shares);
+        const rate = Number(Number(form.dividendRate).toFixed(6))
+        const sh = Number(Number(form.shares).toFixed(6))
 
         if (
           checkIsNumInputInvalid(rate,sh)
@@ -93,7 +93,7 @@ export const FormContextProvider = ({ children }:FormProviderProps) => {
           return null;
         }
 
-        return rate * sh;
+        return Number((rate * sh).toFixed(2));
       },
       [form.dividendRate, form.shares]
     );
