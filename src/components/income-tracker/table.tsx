@@ -2,9 +2,11 @@ import { UiText } from "@/components/ui-text";
 import { COLORS } from "@/constants/theme";
 import { dividendContext } from "@/Context/dividendContext";
 import { formContext } from "@/Context/formContext";
-import { columnsFitNumFormat } from '@/utils/format';
+import { columnsFitNumFormat, fmt } from '@/utils/format';
 import {
-  BarChart3, Pencil, Trash2
+  BarChart3, Pencil,
+  Plus,
+  Trash2
 } from "lucide-react-native";
 import { Fragment, useContext, useMemo, useState } from "react";
 import {
@@ -102,7 +104,7 @@ export function Table() {
             <View style={s.empty}>
               <BarChart3 size={28} color="#d0d0d8" />
               <UiText style={{ color: COLORS.label }}>No records for {year}</UiText>
-              <Pressable onPress={openAdd}>
+              <Pressable onPress={() => openAdd()}>
                 <UiText style={{ color: COLORS.green }}>Add first entry →</UiText>
               </Pressable>
             </View>
@@ -157,7 +159,7 @@ export function Table() {
                   return (
                     <Fragment key={r.dividend_id}>
                       <Pressable
-                        onPress={() => setSelectedId(isSelected ? null : r.dividend_id)}
+                        onPress={() =>[setSelectedId(isSelected ? null : r.dividend_id),]}
                         style={[
                           s.row,
                           {
@@ -197,7 +199,7 @@ export function Table() {
                         </View>
                         <View style={[s.cRate, { paddingVertical: 16, alignSelf: 'flex-start'}]}>
                           <UiText style={{ color: COLORS.green, fontWeight: "600", alignSelf: 'flex-start'}}>
-                            {columnsFitNumFormat(r.dividend_rate)}
+                            {fmt(r.dividend_rate)}
                           </UiText>
                         </View>
                         <View style={[s.cShares, { paddingVertical: 16, alignSelf: 'flex-start'}]}>
@@ -220,18 +222,27 @@ export function Table() {
                             isLast ? lastBorder : midBorder,
                           ]}
                         >
+                          {/* Adding new record on existed stock */}
+                          <Pressable
+                            onPress={() => openAdd(r.symbol)}
+                            style={({ pressed }) => [s.addBtn, pressed && { opacity: 0.7 }]}
+                          >
+                            <Plus size={15} strokeWidth={2.5} color="#fff" />
+                          </Pressable>
+                          
+                          {/* Edit stock */}
                           <Pressable
                             onPress={() => openEdit(r)}
                             style={({ pressed }) => [
                               s.actionBtn,
                               {
                                 backgroundColor: "#f0f0f4",
-                                borderColor: "rgba(0,168,84,0.06)",
+                                borderColor: "rgba(95, 135, 115, 0.6)",
                               },
                               pressed && { opacity: 0.7 },
                             ]}
                           >
-                            <Pencil size={10} strokeWidth={2.5} color={COLORS.ink} />
+                            <Pencil size={15} strokeWidth={2.5} color={COLORS.ink} />
                             <UiText style={s.actionTxt}>EDIT</UiText>
                           </Pressable>
                           <Pressable
@@ -240,12 +251,12 @@ export function Table() {
                               s.actionBtn,
                               {
                                 backgroundColor: "rgba(217,58,58,0.08)",
-                                borderColor: "rgba(217,58,58,0.2)",
+                                borderColor: "rgba(217,58,58,0.5)",
                               },
                               pressed && { opacity: 0.7 },
                             ]}
                           >
-                            <Trash2 size={10} strokeWidth={2.5} color={COLORS.red} />
+                            <Trash2 size={15} strokeWidth={2.5} color={COLORS.red} />
                             <UiText style={[s.actionTxt, { color: COLORS.red }]}>DELETE</UiText>
                           </Pressable>
                           <UiText
@@ -282,16 +293,17 @@ const s = StyleSheet.create({
   },
   th: { fontSize: 14, fontWeight: "500", color: COLORS.mutedForeground, alignSelf : "flex-start"},
   row: { flexDirection: "row", alignItems: "center" },
-  cStock: { flex: 1.1, justifyContent: "center" },
-  cMonth: { flex: 1, justifyContent: "center", paddingHorizontal: 5},
-  cRate: { flex: 1.9, justifyContent: "center", paddingHorizontal: 5 },
+  cStock: { flex: 1.6, justifyContent: "center" },
+  cMonth: { flex: 0.9, justifyContent: "center", paddingHorizontal: 5},
+  cRate: { flex: 1.5, justifyContent: "center", paddingHorizontal: 5 },
   cShares: { flex: 1.9, justifyContent: "center", paddingHorizontal: 5 },
   cProfit: { flex: 1.9, justifyContent: "center", paddingRight: 5, paddingLeft: 5 },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    paddingHorizontal: 12,
+    paddingLeft: 7,
+    paddingRight: 12,
     paddingBottom: 10,
     backgroundColor: "rgba(0,168,84,0.03)",
   },
@@ -311,5 +323,14 @@ const s = StyleSheet.create({
     paddingVertical: 96,
     paddingHorizontal: 50,
     gap: 12,
+  },
+  addBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: COLORS.ink,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderRadius: 2,
   }
 })

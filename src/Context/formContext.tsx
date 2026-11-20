@@ -20,7 +20,7 @@ interface FormContextType {
       dividendRate: string;
       shares: string;
     }>>
-    openAdd: () => void;
+    openAdd: (stockSymbol?:string) => void;
     openEdit: (r: DividendRow) => void;
     previewProfit: number | null;
     handleSubmit: () => void;
@@ -53,9 +53,9 @@ export const FormContextProvider = ({ children }:FormProviderProps) => {
     })
 
     //Add record
-    const openAdd = () => {
+    const openAdd = (stockSymbol?: string) => {
         setSelectedId(null)
-        setForm({ stock: "", month: 1, dividendRate: "", shares: "" })
+        setForm({ stock: stockSymbol === undefined ?"":stockSymbol , month: 1, dividendRate: "", shares: "" })
         setFormMode({ type: "add" })
     }   
     

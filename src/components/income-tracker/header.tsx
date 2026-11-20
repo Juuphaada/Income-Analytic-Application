@@ -55,7 +55,7 @@ export function Header() {
                     null
                   ) : (
                     <Pressable
-                      onPress={openAdd}
+                      onPress={() => openAdd()}
                       style={({ pressed }) => [s.addBtn, pressed && { opacity: 0.7 }]}
                     >
                       <Plus size={20} strokeWidth={2.5} color="#fff" />
